@@ -1,4 +1,4 @@
-﻿INSERT INTO "public"."countrylanguage" ("countrycode", "language", "isofficial", "percentage") VALUES
+INSERT INTO "public"."countrylanguage" ("countrycode", "language", "isofficial", "percentage") VALUES
 ('ABW', 'Dutch', 't', 5.3),
 ('ABW', 'English', 'f', 9.5),
 ('ABW', 'Papiamento', 'f', 76.7),

@@ -1,4 +1,4 @@
-﻿INSERT INTO "public"."city" ("id", "name", "countrycode", "district", "population") VALUES
+INSERT INTO "public"."city" ("id", "name", "countrycode", "district", "population") VALUES
 (2, 'Qandahar', 'AFG', 'Qandahar', 237500),
 (3, 'Herat', 'AFG', 'Herat', 186800),
 (4, 'Mazar-e-Sharif', 'AFG', 'Balkh', 127800),

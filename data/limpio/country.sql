@@ -1,4 +1,4 @@
-﻿INSERT INTO "public"."country" ("code", "name", "continent", "region", "surfacearea", "indepyear", "population", "lifeexpectancy", "gnp", "gnpold", "localname", "governmentform", "headofstate", "capital", "code2") VALUES
+INSERT INTO "public"."country" ("code", "name", "continent", "region", "surfacearea", "indepyear", "population", "lifeexpectancy", "gnp", "gnpold", "localname", "governmentform", "headofstate", "capital", "code2") VALUES
 ('ABW', 'Aruba', 'North America', 'Caribbean', 193, NULL, 103000, 78.4, 828.00, 793.00, 'Aruba', 'Nonmetropolitan Territory of The Netherlands', 'Beatrix', 129, 'AW'),
 ('AFG', 'Afghanistan', 'Asia', 'Southern Asia', 652860, 1919, 40000000, 62, 69000000.00, NULL, 'Afghanistan', 'Totalitarian', NULL, NULL, 'AF'),
 ('AGO', 'Angola', 'Africa', 'Central Africa', 1.2467e+06, 1975, 12878000, 38.3, 6648.00, 7984.00, 'Angola', 'Republic', 'Jos Eduardo dos Santos', 56, 'AO'),
