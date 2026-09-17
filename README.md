@@ -125,6 +125,117 @@ Abrir cada archivo en el *Query Tool* en este orden y ejecutarlo completo:
 | 7 | Oceania |
 | 8 | South America |
 
+## Verificación: datos insertados sin caracteres inválidos
+
+Estas consultas comprueban que ninguna fila quedó con el carácter `U+FFFD` (el símbolo `�`).
+En PostgreSQL ese carácter se obtiene con `chr(65533)`, que es su código decimal.
+Todas están reunidas en `sql/03_verificacion.sql`.
+
+Conectarse a la base (desde PowerShell, contenedor Docker):
+
+```powershell
+docker exec -it postgres_db psql -U bkseducate -d college
+```
+
+### 1. Conteo de filas con el carácter inválido por tabla
+
+Debe devolver `0` en las tres tablas.
+
+```sql
+SELECT 'city' AS tabla,
+       count(*) FILTER (WHERE name     LIKE '%' || chr(65533) || '%'
+                           OR district LIKE '%' || chr(65533) || '%') AS filas_con_caracter_invalido
+FROM city
+UNION ALL
+SELECT 'country',
+       count(*) FILTER (WHERE name                    LIKE '%' || chr(65533) || '%'
+                           OR localname               LIKE '%' || chr(65533) || '%'
+                           OR governmentform          LIKE '%' || chr(65533) || '%'
+                           OR coalesce(headofstate,'') LIKE '%' || chr(65533) || '%')
+FROM country
+UNION ALL
+SELECT 'countrylanguage',
+       count(*) FILTER (WHERE language LIKE '%' || chr(65533) || '%')
+FROM countrylanguage;
+```
+
+Resultado esperado:
+
+```
+      tabla      | filas_con_caracter_invalido
+-----------------+-----------------------------
+ city            |                           0
+ country         |                           0
+ countrylanguage |                           0
+```
+
+### 2. Filas que originalmente tenían el carácter
+
+Los registros que en `data/original/` venían con `�` deben mostrarse ya limpios.
+
+```sql
+SELECT id, name, district FROM city WHERE id IN (20, 33, 40);
+```
+```
+ id |      name       |   district
+----+-----------------+---------------
+ 20 | s-Hertogenbosch | Noord-Brabant
+ 33 | Willemstad      | Curaao
+ 40 | Stif            | Stif
+```
+
+```sql
+SELECT code, name, localname, headofstate FROM country WHERE code IN ('AGO', 'ALB');
+```
+```
+ code |  name   | localname |      headofstate
+------+---------+-----------+------------------------
+ AGO  | Angola  | Angola    | Jos Eduardo dos Santos
+ ALB  | Albania | Shqipria  | Rexhep Mejdani
+```
+
+### 3. Búsqueda de cualquier carácter no ASCII (revisión estricta)
+
+Lista los textos que todavía contengan algún byte fuera del rango ASCII. Tras la limpieza el
+resultado debe estar vacío, porque los archivos originales solo tenían `U+FFFD` como carácter especial.
+
+```sql
+SELECT 'city' AS tabla, id::text AS clave, name AS valor
+FROM city WHERE name ~ '[^ -~]' OR district ~ '[^ -~]'
+UNION ALL
+SELECT 'country', code, name
+FROM country WHERE name ~ '[^ -~]' OR localname ~ '[^ -~]' OR coalesce(headofstate,'') ~ '[^ -~]'
+UNION ALL
+SELECT 'countrylanguage', countrycode, language
+FROM countrylanguage WHERE language ~ '[^ -~]';
+```
+
+Resultado esperado: `(0 rows)`.
+
+### 4. Codificación de la base y del cliente
+
+```sql
+SHOW server_encoding;
+SHOW client_encoding;
+```
+
+Ambos deben devolver `UTF8`. Si el cliente muestra `WIN1252`, las tildes que se inserten
+después podrían corromperse; corregir con `SET client_encoding TO 'UTF8';`.
+
+### 5. Verificación desde la terminal sin entrar a psql
+
+Un solo comando que ejecuta el archivo de verificación completo:
+
+```powershell
+docker exec -i postgres_db psql -U bkseducate -d college -f - < sql\03_verificacion.sql
+```
+
+Desde el psql instalado en Windows (puerto 5433 mapeado al contenedor):
+
+```powershell
+$env:PGCLIENTENCODING = "UTF8"; & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -h localhost -p 5433 -U bkseducate -d college -f sql\03_verificacion.sql
+```
+
 ## Errores frecuentes
 
 | Error | Causa | Solución |
